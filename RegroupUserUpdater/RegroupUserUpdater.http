@@ -1,0 +1,6 @@
+@RegroupUserUpdater_HostAddress = http://localhost:5128
+
+GET {{RegroupUserUpdater_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
