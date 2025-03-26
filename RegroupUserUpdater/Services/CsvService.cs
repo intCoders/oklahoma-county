@@ -61,5 +61,10 @@ namespace RegroupUserUpdater.Services
 
             return csvDataList;
         }
+
+        public async Task<List<InfoRequests>> ParseDailyAlertCsvFileAsync(IFormFile file)
+        {
+            throw new NotImplementedException();
+        }
     }
 } 

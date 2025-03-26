@@ -12,5 +12,6 @@ namespace RegroupUserUpdater.Interfaces
         Task CreateGroupAsync(GroupResult newGroup);
         Task AddContactToGroupsAsync(string email, List<string> groupNames);
         Task<bool> SendEmailAlertAsync(string subject, string body, List<string> emails, string fromEmail = "regroup@hotmail.com", string fromName = "Regroup");
+        Task<List<ContactResult>> GetAllContactsAsync();
     }
 } 

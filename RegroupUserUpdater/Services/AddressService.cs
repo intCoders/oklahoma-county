@@ -5,14 +5,9 @@ using RegroupUserUpdater.Models;
 
 namespace RegroupUserUpdater.Services
 {
-    public class AddressService : IAddressService
+    public class AddressService(ApplicationDbContext context) : IAddressService
     {
-        private readonly ApplicationDbContext _context;
-
-        public AddressService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         public async Task<List<Address>> GetAllAddressesAsync()
         {
@@ -22,6 +17,18 @@ namespace RegroupUserUpdater.Services
         public async Task<Address?> GetAddressByIdAsync(int id)
         {
             return await _context.Addresses.FindAsync(id);
+        }
+
+        public async Task<Address?> GetAddressByLegalAddressAsync(string legalAddress)
+        {
+            return await _context.Addresses
+                .FirstOrDefaultAsync(a => a.LegalAddress == legalAddress);
+        }
+
+        public async Task<Address?> GetAddressByStreetAddressAsync(string streetAddress)
+        {
+            return await _context.Addresses
+                .FirstOrDefaultAsync(a => a.FullAddress == streetAddress);
         }
 
         public async Task<Address> AddAddressAsync(Address address)
