@@ -75,9 +75,9 @@ namespace RegroupUserUpdater.Services
             return contactResults;
         }
 
-        public async Task<ContactResult?> GetContactAsync(string contactId)
+        public async Task<ContactResult?> GetContactAsync(string contactId, string contactName)
         {
-            var url = $"https://app.regroup.com/api/v3/contacts?databaseid={contactId}";
+            var url = $"https://app.regroup.com/api/v3/contacts?databaseid={contactId}&username={contactName}";
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 

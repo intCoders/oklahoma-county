@@ -29,7 +29,66 @@ namespace RegroupUserUpdater.Endpoints
                 Console.WriteLine($"File uploaded: {file.FileName}, Size: {file.Length}");
 
                 var csvDataList = await csvService.ParseDailyAlertCsvFileAsync(file);
-                List<CsvData> notificationList = [];
+                var allContacts = await regroupApiService.GetAllContactsAsync();
+                foreach (var csvData in csvDataList)
+                {
+                    ContactResult? contact = null;
+
+                    if (!string.IsNullOrWhiteSpace(csvData.Grantor))
+                    {
+                        string[] grantorParts = csvData.Grantor.Split(',');
+
+                        foreach (var grantorPart in grantorParts)
+                        {
+                            var contactResponse = await regroupApiService.GetContactAsync("", grantorPart);
+
+                            if(contactResponse != null)
+                            {
+                                contact = contactResponse;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (contact == null && !string.IsNullOrWhiteSpace(csvData.Grantee))
+                    {
+                        string[] granteeParts = csvData.Grantee.Split(',');
+
+                        foreach (var granteePart in granteeParts)
+                        {
+                            var contactResponse = await regroupApiService.GetContactAsync("", granteePart);
+
+                            if (contactResponse != null)
+                            {
+                                contact = contactResponse;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(contact == null && !string.IsNullOrWhiteSpace(csvData.LegalDescription) && csvData.LegalDescription.Contains("Lot:")
+                    && csvData.LegalDescription.Contains("Block:"))
+                    {
+                        var addressParts = csvData.LegalDescription.Split(new string[] { "Lot:", "Block:" }, StringSplitOptions.RemoveEmptyEntries);
+
+                        contact = allContacts.Find(x => {
+
+                            if (string.IsNullOrWhiteSpace(x.Address) || !x.Address.Contains("Lot:") || !x.Address.Contains("Block:"))
+                                return false;
+
+                            var currentAddressParts = x.Address.Split(new string[] { "Lot:", "Block:" }, StringSplitOptions.RemoveEmptyEntries);
+
+                            return addressParts[0].Trim().ToLower() == currentAddressParts[0].Trim().ToLower()
+                                   && addressParts[1].Trim().ToLower() == currentAddressParts[1].Trim().ToLower()
+                                   && addressParts[2].Trim().ToLower() == currentAddressParts[2].Trim().ToLower();
+                            });
+                    }
+
+                    if (contact == null)
+                        continue;
+
+                    //Enviar correo
+                }
 
                 return Results.Ok();
             });
@@ -66,7 +125,7 @@ namespace RegroupUserUpdater.Endpoints
                         continue;
                     }
 
-                    ContactResult? contact = await regroupApiService.GetContactAsync(csvData.TaxId);
+                    ContactResult? contact = await regroupApiService.GetContactAsync(csvData.TaxId, "");
 
                     if(contact == null)
                     {
