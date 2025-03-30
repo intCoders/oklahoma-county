@@ -41,7 +41,7 @@ namespace RegroupUserUpdater.Services
             var content = await response.Content.ReadAsStringAsync();
             var groupResponse = JsonSerializer.Deserialize<GroupResponse>(content, _jsonOptions);
 
-            var groupResults = groupResponse?.Results ?? new List<GroupResult>();
+            var groupResults = groupResponse?.Results ?? [];
 
             foreach (var group in groupResults)
             {
@@ -61,16 +61,30 @@ namespace RegroupUserUpdater.Services
             return JsonSerializer.Deserialize<UserResponse>(content, _jsonOptions);
         }
 
-        public async Task<ContactResult?> GetContactAsync(string contactId)
+        public async Task<List<ContactResult>> GetAllContactsAsync()
         {
-            var url = $"https://app.regroup.com/api/v3/contacts?databaseid={contactId}";
+            var url = $"https://app.regroup.com/api/v3/contacts?all=true";
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
             var contactResponse = JsonSerializer.Deserialize<ContactResponse>(content, _jsonOptions);
 
-            var contactResults = contactResponse?.Results ?? new List<ContactResult>();
+            var contactResults = contactResponse?.Results ?? [];
+
+            return contactResults;
+        }
+
+        public async Task<ContactResult?> GetContactAsync(string contactId, string contactName)
+        {
+            var url = $"https://app.regroup.com/api/v3/contacts?databaseid={contactId}&username={contactName}";
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var contactResponse = JsonSerializer.Deserialize<ContactResponse>(content, _jsonOptions);
+
+            var contactResults = contactResponse?.Results ?? [];
 
             return contactResults.FirstOrDefault();
         }
@@ -110,7 +124,7 @@ namespace RegroupUserUpdater.Services
                 {
                     new
                     {
-                        email = email,
+                        email,
                         groupname = string.Join(";", groupNames),
                         user_type = "contact"
                     }

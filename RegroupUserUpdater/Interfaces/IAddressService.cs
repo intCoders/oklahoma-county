@@ -9,5 +9,7 @@ namespace RegroupUserUpdater.Interfaces
         Task<Address> AddAddressAsync(Address address);
         Task<Address?> UpdateAddressAsync(int id, Address address);
         Task<bool> DeleteAddressAsync(int id);
+        Task<Address?> GetAddressByLegalAddressAsync(string fullAddress);
+        Task<Address?> GetAddressByStreetAddressAsync(string streetAddress);
     }
 } 

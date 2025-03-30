@@ -9,5 +9,6 @@ namespace RegroupUserUpdater.Interfaces
     public interface ICsvService
     {
         Task<List<CsvData>> ParseCsvFileAsync(IFormFile file);
+        Task<List<InfoRequests>> ParseDailyAlertCsvFileAsync(IFormFile file);
     }
 } 
