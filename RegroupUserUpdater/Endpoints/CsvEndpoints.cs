@@ -66,28 +66,46 @@ namespace RegroupUserUpdater.Endpoints
                         }
                     }
 
-                    if(contact == null && !string.IsNullOrWhiteSpace(csvData.LegalDescription) && csvData.LegalDescription.Contains("Lot:")
-                    && csvData.LegalDescription.Contains("Block:"))
+                    if (contact == null && !string.IsNullOrWhiteSpace(csvData.LegalDescription) &&
+                        csvData.LegalDescription.Contains("Lot:")
+                        && csvData.LegalDescription.Contains("Block:"))
                     {
-                        var addressParts = csvData.LegalDescription.Split(new string[] { "Lot:", "Block:" }, StringSplitOptions.RemoveEmptyEntries);
+                        var addressParts = csvData.LegalDescription.Split(new string[] { "Lot:", "Block:" },
+                            StringSplitOptions.RemoveEmptyEntries);
 
-                        contact = allContacts.Find(x => {
+                        contact = allContacts.Find(x =>
+                        {
 
-                            if (string.IsNullOrWhiteSpace(x.Address) || !x.Address.Contains("Lot:") || !x.Address.Contains("Block:"))
+                            if (string.IsNullOrWhiteSpace(x.Address) || !x.Address.Contains("Lot:") ||
+                                !x.Address.Contains("Block:"))
                                 return false;
 
-                            var currentAddressParts = x.Address.Split(new string[] { "Lot:", "Block:" }, StringSplitOptions.RemoveEmptyEntries);
+                            var currentAddressParts = x.Address.Split(new string[] { "Lot:", "Block:" },
+                                StringSplitOptions.RemoveEmptyEntries);
 
                             return addressParts[0].Trim().ToLower() == currentAddressParts[0].Trim().ToLower()
                                    && addressParts[1].Trim().ToLower() == currentAddressParts[1].Trim().ToLower()
                                    && addressParts[2].Trim().ToLower() == currentAddressParts[2].Trim().ToLower();
-                            });
+                        });
                     }
 
                     if (contact == null)
                         continue;
 
                     //Enviar correo
+                    var subject = "Property Alert";
+                    var bodyBuilder = new StringBuilder();
+                    bodyBuilder.AppendLine($"<h2>Property Alert</h2>");
+                    bodyBuilder.AppendLine($"<p>Property: {csvData.LegalDescription}</p>");
+                    bodyBuilder.AppendLine($"<p>Property: {csvData.InstrumentNumber}</p>");
+                    bodyBuilder.AppendLine($"<p>Grantor: {csvData.Grantor}</p>");
+                    bodyBuilder.AppendLine($"<p>Grantee: {csvData.Grantee}</p>");
+                    bodyBuilder.AppendLine($"<p>Document Type: {csvData.RecordingDate}</p>");
+                    bodyBuilder.AppendLine($"<p>Recorded Date: {csvData.DocumentTypeDescription}</p>");
+                    
+                    var emails = new List<string> { contact.Emails };
+                    await regroupApiService.SendEmailAlertAsync(subject, bodyBuilder.ToString(), emails);
+                    
                 }
 
                 return Results.Ok();
@@ -263,9 +281,10 @@ namespace RegroupUserUpdater.Endpoints
                 var groupResults = await regroupApiService.GetGroupResultsAsync();
                 List<string> notificationList = [];
 
-                foreach (var contact in allContacts)
+                foreach (var contact in allContacts.Where(c => !string.IsNullOrWhiteSpace(c.Address)))
                 {
-                    var address = await addressService.GetAddressByStreetAddressAsync(contact.Address ?? "");
+                    var streetAddress = contact.Address.Split("|")[0];
+                    var address = await addressService.GetAddressByStreetAddressAsync(streetAddress);
 
                     if (address != null)
                     {
