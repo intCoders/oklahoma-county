@@ -237,7 +237,7 @@ namespace RegroupUserUpdater.Services
                     email_body = body,
                     sms_body = textOnlyBody,
                     call_body = textOnlyBody,
-                    sender_profile_id = _configuration["regroup:sender_profile_id"],
+                    sender_profile_id = Convert.ToInt32(_configuration["regroup:sender_profile_id"]),
                     emergency = false
                 }
             };

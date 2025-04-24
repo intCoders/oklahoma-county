@@ -29,7 +29,7 @@ public class LocationUpdaterConsumer : BackgroundService
                 var regroupService = scope.ServiceProvider.GetRequiredService<IRegroupApiService>();
 
                 await ProcessCsvFiles(addressService, regroupService);
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
             catch (Exception ex)
             {
