@@ -1,5 +1,5 @@
 ﻿# Use the official .NET SDK image for building the application
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o /out
 
 # Use a runtime image for running the application
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
 # Set the working directory inside the container
 WORKDIR /app
