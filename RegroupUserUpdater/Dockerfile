@@ -1,23 +1,29 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
+﻿# Use the official .NET SDK image for building the application
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
+# Set the working directory inside the container
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["RegroupUserUpdater/RegroupUserUpdater.csproj", "RegroupUserUpdater/"]
-RUN dotnet restore "RegroupUserUpdater/RegroupUserUpdater.csproj"
-COPY . .
-WORKDIR "/src/RegroupUserUpdater"
-RUN dotnet build "RegroupUserUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/build
+# Copy the project files
+COPY . ./
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "RegroupUserUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Restore dependencies
+RUN dotnet restore
 
-FROM base AS final
+# Build the application
+RUN dotnet publish -c Release -o /out
+
+# Use a runtime image for running the application
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runtime
+
+# Set the working directory inside the container
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+# Copy the published output from the build stage
+COPY --from=build /out .
+
+# Expose the port your application runs on
+EXPOSE 5128
+
+# Set the entry point to run the application
 ENTRYPOINT ["dotnet", "RegroupUserUpdater.dll"]
