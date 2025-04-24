@@ -6,6 +6,9 @@ using RegroupUserUpdater.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<SftpSettings>(
+    builder.Configuration.GetSection("sftp"));
+
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,8 +19,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register services
 builder.Services.AddScoped<IAddressService, AddressService>();
-builder.Services.AddSingleton<IRegroupApiService, RegroupApiService>();
-builder.Services.AddSingleton<ICsvService, CsvService>();
+builder.Services.AddScoped<IRegroupApiService, RegroupApiService>();
+builder.Services.AddScoped<ICsvService, CsvService>();
+
+builder.Services.AddHostedService<AddressDbConsumer>();
+builder.Services.AddHostedService<LocationUpdaterConsumer>();
+builder.Services.AddHostedService<NotificationsConsumer>();
 
 var app = builder.Build();
 

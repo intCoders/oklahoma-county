@@ -73,55 +73,63 @@ namespace RegroupUserUpdater.Services
         public async Task<List<InfoRequests>> ParseDailyAlertCsvFileAsync(IFormFile file)
         {
             var infoRequestsList = new List<InfoRequests>();
-            Dictionary<string, int> headerIndexes = new Dictionary<string, int>();
-            string[]? headers = null;
 
             using (var stream = new StreamReader(file.OpenReadStream()))
             {
-                string? line;
-                bool isFirstLine = true;
-                while ((line = await stream.ReadLineAsync()) != null)
-                {
-                    if (isFirstLine)
-                    {
-                        headers = ParseCsvLine(line)
-                            .Select(h => h.Trim().ToLower()
-                                .Replace("/", "")
-                                .Replace(" ", "")
-                                .Replace("-", "")
-                                .Replace("\\", ""))
-                            .ToArray();
-                        
-                        for (int i = 0; i < headers.Length; i++)
-                        {
-                            headerIndexes[headers[i]] = i;
-                        }
-                        
-                        isFirstLine = false;
-                        continue;
-                    }
+                infoRequestsList = await ParseDailyAlertStream(stream);
+            }
 
-                    var parts = ParseCsvLine(line);
-                    if (headers != null && parts.Length >= headers.Length)
-                    {
-                        var infoRequest = new InfoRequests();
+            return infoRequestsList;
+        }
+
+        public async Task<List<InfoRequests>>  ParseDailyAlertStream(StreamReader stream)
+        {
+            List<InfoRequests> infoRequestsList = new List<InfoRequests>();
+            Dictionary<string, int> headerIndexes = new Dictionary<string, int>();
+            string[]? headers = null;
+            string? line;
+            bool isFirstLine = true;
+            while ((line = await stream.ReadLineAsync()) != null)
+            {
+                if (isFirstLine)
+                {
+                    headers = ParseCsvLine(line)
+                        .Select(h => h.Trim().ToLower()
+                            .Replace("/", "")
+                            .Replace(" ", "")
+                            .Replace("-", "")
+                            .Replace("\\", ""))
+                        .ToArray();
                         
-                        for (int i = 0; i < headers.Length; i++)
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        headerIndexes[headers[i]] = i;
+                    }
+                        
+                    isFirstLine = false;
+                    continue;
+                }
+
+                var parts = ParseCsvLine(line);
+                if (headers != null && parts.Length >= headers.Length)
+                {
+                    var infoRequest = new InfoRequests();
+                        
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        if (i < parts.Length)
                         {
-                            if (i < parts.Length)
+                            var propertyName = headers[i].Replace(" ", "");
+                            var property = typeof(InfoRequests).GetProperties()
+                                .FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
+                            if (property != null)
                             {
-                                var propertyName = headers[i].Replace(" ", "");
-                                var property = typeof(InfoRequests).GetProperties()
-                                    .FirstOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
-                                if (property != null)
-                                {
-                                    property.SetValue(infoRequest, parts[i].Trim());
-                                }
+                                property.SetValue(infoRequest, parts[i].Trim());
                             }
                         }
-                        
-                        infoRequestsList.Add(infoRequest);
                     }
+                        
+                    infoRequestsList.Add(infoRequest);
                 }
             }
 

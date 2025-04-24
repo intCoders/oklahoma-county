@@ -10,5 +10,6 @@ namespace RegroupUserUpdater.Interfaces
     {
         Task<List<CsvData>> ParseCsvFileAsync(IFormFile file);
         Task<List<InfoRequests>> ParseDailyAlertCsvFileAsync(IFormFile file);
+        Task<List<InfoRequests>> ParseDailyAlertStream(StreamReader stream);
     }
 } 
