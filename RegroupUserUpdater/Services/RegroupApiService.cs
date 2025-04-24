@@ -14,20 +14,22 @@ namespace RegroupUserUpdater.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
+        private IConfiguration _configuration;
 
-        public RegroupApiService()
+        public RegroupApiService(IConfiguration configuration)
         {
-            _httpClient = CreateHttpClient();
+            _configuration = configuration;
+            _httpClient = CreateHttpClient(configuration);
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
         }
 
-        private static HttpClient CreateHttpClient()
+        private static HttpClient CreateHttpClient(IConfiguration configuration)
         {
             var httpClient = new HttpClient();
-            var byteArray = Encoding.ASCII.GetBytes("-jrdX_FydxxrYoKQXdvNTw:ubPYpX4Oz66K-Hu7vcxn5g");
+            var byteArray = Encoding.ASCII.GetBytes($"{configuration["regroup:api_key"]}:{configuration["regroup:api_secret"]}");
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
             return httpClient;
@@ -149,6 +151,31 @@ namespace RegroupUserUpdater.Services
             var response = await _httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
         }
+        
+        public async Task UpdateContactAddresses(string email, List<string> addresses)
+        {
+            var url = "https://app.regroup.com/api/v3/orgs/import_users";
+            
+            var requestPayload = new
+            {
+                users = new[]
+                {
+                    new
+                    {
+                        email,
+                        address = string.Join(";", addresses),
+                        groupname = "New Group",
+                        user_type = "contact"
+                    }
+                }
+            };
+            
+            var jsonContent = JsonSerializer.Serialize(requestPayload);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+        }
 
         public async Task<bool> SendEmailAlertAsync(string subject, string body, List<string> emails, string fromEmail = "regroup@hotmail.com", string fromName = "Regroup")
         {
@@ -166,6 +193,52 @@ namespace RegroupUserUpdater.Services
                         From = fromEmail,
                         FromName = fromName
                     }
+                }
+            };
+            
+            var jsonContent = JsonSerializer.Serialize(requestPayload, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.PostAsync(url, content);
+            
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email alert: {ex.Message}");
+                return false;
+            }
+        }
+        
+        public async Task<bool> SendMessage(string subject, string body, string textOnlyBody, List<string> emails, List<string>? preferredMethods = null)
+        {
+            var url = "https://app.regroup.com/api/v3/messages";
+            
+            var requestPayload = new
+            {
+                topic = new
+                {
+                    individual_contacts = new
+                    {
+                        emails = emails
+                    },
+                    post_types = preferredMethods ?? ["email", "sms", "call"],
+                    message_title = subject,
+                    subject = subject,
+                    is_custom_content = true,
+                    include_post_link = true,
+                    general_body = body,
+                    email_body = body,
+                    sms_body = textOnlyBody,
+                    call_body = textOnlyBody,
+                    sender_profile_id = _configuration["regroup:sender_profile_id"],
+                    emergency = false
                 }
             };
             

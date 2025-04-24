@@ -28,7 +28,7 @@ namespace RegroupUserUpdater.Services
         public async Task<Address?> GetAddressByStreetAddressAsync(string streetAddress)
         {
             return await _context.Addresses
-                .FirstOrDefaultAsync(a => a.FullAddress.ToLower() == streetAddress.ToLower());
+                .FirstOrDefaultAsync(a => a.FullAddress.ToLower().Trim() == streetAddress.ToLower().Trim());
         }
 
         public async Task<Address> AddAddressAsync(Address address)
