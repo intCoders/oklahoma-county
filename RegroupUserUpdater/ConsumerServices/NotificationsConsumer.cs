@@ -160,7 +160,7 @@ public class NotificationsConsumer : BackgroundService
 
                         textOnly += ". Thanks, Oklahoma County Clerk";
 
-                        var emails = new List<string> { contact.Email, contact.Emails };
+                        var emails = new List<string> { contact.Email };
                         var preferredMethod = !string.IsNullOrWhiteSpace(contact.PreferredMethod)
                             ? contact.PreferredMethod.Split("|")[0]
                             : null;
