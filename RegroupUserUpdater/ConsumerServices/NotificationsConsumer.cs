@@ -152,7 +152,7 @@ public class NotificationsConsumer : BackgroundService
                         var subject = "Oklahoma County Clerk - Property Alert";
                         var bodyBuilder = new StringBuilder();
                         var textOnly =
-                            $"{csvData.Grantor}, Information about your property {csvData.LegalDescription} has been requested by {csvData.Grantee} on {csvData.RecordingDate} with the instrument number {csvData.InstrumentNumber} for the reason of {csvData.DocumentTypeDescription}";
+                            $"{csvData.Grantee}, Information about your property {csvData.LegalDescription} has been requested by {csvData.Grantor} on {csvData.RecordingDate} with the instrument number {csvData.InstrumentNumber} for the reason of {csvData.DocumentTypeDescription}";
                         bodyBuilder.AppendLine($"<h2>Property Record Access Alert</h2>");
                         bodyBuilder.AppendLine($"<p>{textOnly}.");
                         bodyBuilder.AppendLine($"<p>Thanks,</p>");
