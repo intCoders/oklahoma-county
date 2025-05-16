@@ -257,7 +257,7 @@ namespace RegroupUserUpdater.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending email alert: {ex.Message}");
+                Console.WriteLine($"Error sending email alert: {ex.Message} | {response.ReasonPhrase} | Content: {await response.Content.ReadAsStringAsync()}");
                 return false;
             }
         }
