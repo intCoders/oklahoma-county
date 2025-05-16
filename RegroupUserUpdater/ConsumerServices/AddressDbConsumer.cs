@@ -30,12 +30,12 @@ public class AddressDbConsumer : BackgroundService
                 var addressService = scope.ServiceProvider.GetRequiredService<IAddressService>();
 
                 await ProcessCsvFiles(addressService);
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "SFTP processing error");
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(60), stoppingToken);
             }
         }
     }

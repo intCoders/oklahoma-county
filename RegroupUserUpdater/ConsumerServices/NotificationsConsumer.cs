@@ -169,6 +169,8 @@ public class NotificationsConsumer : BackgroundService
                     _logger.LogError("Failed to process row: {TaxId}, Error: {@Error}", csvData.Grantee, ex);
                 }
             }
+            
+            sftp.DeleteFile("/upload/dailyalerts/" + file.Name);
         }
 
         sftp.Disconnect();
