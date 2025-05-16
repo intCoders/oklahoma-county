@@ -28,6 +28,8 @@ public class AddressDbConsumer : BackgroundService
             {
                 using var scope = _serviceProvider.CreateScope();
                 var addressService = scope.ServiceProvider.GetRequiredService<IAddressService>();
+                
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
 
                 await ProcessCsvFiles(addressService);
                 await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
@@ -102,6 +104,8 @@ public class AddressDbConsumer : BackgroundService
                         "Processed row: {TaxId}, {StreetAddress}, {Addition}, {Lot}, {Block}, {LongLegal}",
                         record.taxid, record.streetaddress, record.addition, record.lot, record.block,
                         record.longlegal);
+                    
+                    Thread.Sleep(100);
                 }
                 catch (Exception ex)
                 {
