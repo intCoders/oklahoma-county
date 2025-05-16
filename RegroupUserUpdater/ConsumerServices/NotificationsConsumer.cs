@@ -79,10 +79,12 @@ public class NotificationsConsumer : BackgroundService
 
                         foreach (var grantorPart in grantorParts)
                         {
+                            _logger.LogInformation("Searching for grantor part: {GrantorPart}", grantorPart);
                             var contactResponse = await regroupApiService.GetContactAsync("", grantorPart);
 
                             if (contactResponse != null)
                             {
+                                _logger.LogInformation("🚀 Found contact: {Contact}", contactResponse.Email);
                                 contact = contactResponse;
                                 break;
                             }
@@ -95,10 +97,12 @@ public class NotificationsConsumer : BackgroundService
 
                         foreach (var granteePart in granteeParts)
                         {
+                            _logger.LogInformation("Searching for grantee part: {GrantorPart}", granteePart);
                             var contactResponse = await regroupApiService.GetContactAsync("", granteePart);
 
                             if (contactResponse != null)
                             {
+                                _logger.LogInformation("🚀 Found contact: {Contact}", contactResponse.Email);
                                 contact = contactResponse;
                                 break;
                             }
@@ -111,6 +115,8 @@ public class NotificationsConsumer : BackgroundService
                     {
                         var addressParts = csvData.LegalDescription.Split(new string[] { "Lot:", "Block:" },
                             StringSplitOptions.RemoveEmptyEntries);
+                        
+                        _logger.LogInformation("Searching for address part: {@Address}", addressParts.ToList());
 
                         contact = allContacts.Find(x =>
                         {
@@ -135,7 +141,14 @@ public class NotificationsConsumer : BackgroundService
                     }
 
                     if (contact == null)
+                    {
+                        _logger.LogInformation("🤦 Contact not found: {@Contact}", csvData);
                         continue;
+                    }
+                    else
+                    {
+                        _logger.LogInformation("🚀 Found contact: {Contact}", contact.Email);
+                    }
 
                     //Enviar correo
                     var subject = "Oklahoma County Clerk - Property Alert";
