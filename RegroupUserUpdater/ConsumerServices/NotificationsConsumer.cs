@@ -142,40 +142,41 @@ public class NotificationsConsumer : BackgroundService
 
                     if (contact == null)
                     {
-                        _logger.LogInformation("🤦 Contact not found: {@Contact}", csvData);
-                        continue;
+                        _logger.LogInformation("🤦 Contact not found: {@Contact}", csvData); 
                     }
                     else
                     {
                         _logger.LogInformation("🚀 Found contact: {Contact}", contact.Email);
+                        
+                        //Enviar correo
+                        var subject = "Oklahoma County Clerk - Property Alert";
+                        var bodyBuilder = new StringBuilder();
+                        var textOnly =
+                            $"{csvData.Grantor}, Information about your property {csvData.LegalDescription} has been requested by {csvData.Grantee} on {csvData.RecordingDate} with the instrument number {csvData.InstrumentNumber} for the reason of {csvData.DocumentTypeDescription}";
+                        bodyBuilder.AppendLine($"<h2>Property Record Access Alert</h2>");
+                        bodyBuilder.AppendLine($"<p>{textOnly}.");
+                        bodyBuilder.AppendLine($"<p>Thanks,</p>");
+                        bodyBuilder.AppendLine($"<p>Oklahoma County Clerk</p>");
+
+                        textOnly += ". Thanks, Oklahoma County Clerk";
+
+                        var emails = new List<string> { contact.Email, contact.Emails };
+                        var preferredMethod = !string.IsNullOrWhiteSpace(contact.PreferredMethod)
+                            ? contact.PreferredMethod.Split("|")[0]
+                            : null;
+
+                        if (preferredMethod != null)
+                        {
+                            await regroupApiService.SendMessage(subject, bodyBuilder.ToString(), textOnly, emails, new List<string>{preferredMethod});
+                        }
+                        else
+                        {
+                            await regroupApiService.SendMessage(subject, bodyBuilder.ToString(), textOnly, emails);
+                        }
+
                     }
 
-                    //Enviar correo
-                    var subject = "Oklahoma County Clerk - Property Alert";
-                    var bodyBuilder = new StringBuilder();
-                    var textOnly =
-                        $"{csvData.Grantor}, Information about your property {csvData.LegalDescription} has been requested by {csvData.Grantee} on {csvData.RecordingDate} with the instrument number {csvData.InstrumentNumber} for the reason of {csvData.DocumentTypeDescription}";
-                    bodyBuilder.AppendLine($"<h2>Property Record Access Alert</h2>");
-                    bodyBuilder.AppendLine($"<p>{textOnly}.");
-                    bodyBuilder.AppendLine($"<p>Thanks,</p>");
-                    bodyBuilder.AppendLine($"<p>Oklahoma County Clerk</p>");
-
-                    textOnly += ". Thanks, Oklahoma County Clerk";
-
-                    var emails = new List<string> { contact.Emails };
-                    var preferredMethod = !string.IsNullOrWhiteSpace(contact.PreferredMethod)
-                        ? contact.PreferredMethod.Split("|")[0]
-                        : null;
-
-                    if (preferredMethod != null)
-                    {
-                        await regroupApiService.SendMessage(subject, bodyBuilder.ToString(), textOnly, emails, new List<string>{preferredMethod});
-                    }
-                    else
-                    {
-                        await regroupApiService.SendMessage(subject, bodyBuilder.ToString(), textOnly, emails);
-                    }
-                   
+                    
                 }
                 catch (Exception ex)
                 {
