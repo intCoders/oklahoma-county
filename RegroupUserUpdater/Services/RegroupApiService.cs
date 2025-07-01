@@ -89,7 +89,8 @@ namespace RegroupUserUpdater.Services
             
             var contacts = await GetAllContactsAsync();
             
-            return contacts.FirstOrDefault(c => c.FirstName?.ToLower() == firstName && c.LastName?.ToLower() == lastName);
+            return contacts.FirstOrDefault(c => (c.FirstName?.ToLower() == firstName && c.LastName?.ToLower() == lastName) 
+                                                || (c.FirstName?.ToLower() == lastName && c.LastName?.ToLower() == firstName));
             
             var url = $"https://app.regroup.com/api/v3/contacts?first_name={firstName}&last_name={lastName}"; //databaseid={contactId}&
             var response = await _httpClient.GetAsync(url);

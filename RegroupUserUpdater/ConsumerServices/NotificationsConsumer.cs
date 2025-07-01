@@ -155,13 +155,14 @@ public class NotificationsConsumer : BackgroundService
                             $"This is a Document Filing Notification for the Oklahoma County Clerk's office. Name: {csvData.Grantor}, Document Number: {csvData.InstrumentNumber}, Document Type: {csvData.DocumentTypeDescription}, Date Recorded: {csvData.RecordingDate}; For more information, Email: property.alert@oklahomacounty.org | Phone: 405-713-1540 | Online: https://www.okcc.online/?instrument={csvData.InstrumentNumber}";
                         bodyBuilder.AppendLine($"<h2>Document Filing Notification</h2>");
                         bodyBuilder.AppendLine($"<p>This is a Document Filing Notification from the Oklahoma County Clerk's office.</p>");
-                        bodyBuilder.AppendLine($"<p><strong>Name:</strong> {csvData.Grantor}");
+                        bodyBuilder.AppendLine($"<p><strong>Grantor:</strong> {csvData.Grantor}");
+                        bodyBuilder.AppendLine($"<p><strong>Grantee:</strong> {csvData.Grantee}");
                         bodyBuilder.AppendLine($"<p><strong>Document Number:</strong> {csvData.InstrumentNumber}");
                         bodyBuilder.AppendLine($"<p><strong>Document Type:</strong> {csvData.DocumentTypeDescription}");
                         bodyBuilder.AppendLine($"<p><strong>Date Recorded:</strong> {csvData.RecordingDate}");
                         bodyBuilder.AppendLine($"<p>For more information, Email: <a href=\"mailto:property.alert@oklahomacounty.org\" target=\"_blank\">property.alert@oklahomacounty.org</a> | Phone: 405-713-1540 | Online: <a href=\"https://www.okcc.online/?instrument={csvData.InstrumentNumber}\">https://www.okcc.online/?instrument={csvData.InstrumentNumber}</a></p>");
                         bodyBuilder.AppendLine($"<p>Thanks,</p>");
-                        bodyBuilder.AppendLine($"<p>Oklahoma County Clerk</p>");
+                        bodyBuilder.AppendLine($"<p>The Oklahoma County Clerk</p>");
 
                         var emails = new List<string> { contact.Email };
                         var preferredMethod = !string.IsNullOrWhiteSpace(contact.PreferredMethod)
