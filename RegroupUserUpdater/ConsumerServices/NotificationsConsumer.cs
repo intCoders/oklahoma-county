@@ -91,6 +91,8 @@ public class NotificationsConsumer : BackgroundService
                         }
                     }
 
+                    var contactFoundInGrantee = false;
+
                     if (contact == null && !string.IsNullOrWhiteSpace(csvData.Grantee))
                     {
                         string[] granteeParts = csvData.Grantee.Split(',');
@@ -104,6 +106,7 @@ public class NotificationsConsumer : BackgroundService
                             {
                                 _logger.LogInformation("🚀 Found contact: {Contact}", contactResponse.Email);
                                 contact = contactResponse;
+                                contactFoundInGrantee = true;
                                 break;
                             }
                         }
@@ -155,9 +158,17 @@ public class NotificationsConsumer : BackgroundService
                             $"This is a Document Filing Notification for the Oklahoma County Clerk's office. Name: {csvData.Grantor}, Document Number: {csvData.InstrumentNumber}, Document Type: {csvData.DocumentTypeDescription}, Date Recorded: {csvData.RecordingDate}; For more information, Email: property.alert@oklahomacounty.org | Phone: 405-713-1540 | Online: https://www.okcc.online/?instrument={csvData.InstrumentNumber}";
                         bodyBuilder.AppendLine($"<h2>Document Filing Notification</h2>");
                         bodyBuilder.AppendLine($"<p>This is a Document Filing Notification from the Oklahoma County Clerk's office.</p>");
-                        bodyBuilder.AppendLine($"<p><strong>Grantor:</strong> {csvData.Grantor}");
+                        bodyBuilder.AppendLine($"<p><strong>Grantor:</strong> {contact.FirstName} {contact.LastName}");
                         bodyBuilder.AppendLine($"<p><strong>Grantee:</strong> {csvData.Grantee}");
-                        bodyBuilder.AppendLine($"<p><strong>Document Number:</strong> {csvData.InstrumentNumber}");
+                        if (!contactFoundInGrantee && !string.IsNullOrWhiteSpace(csvData.InstrumentNumber))
+                        {
+                            var documentNumberLen = csvData.InstrumentNumber.Length;
+                            var midDocumentNumber = documentNumberLen / 2;
+                            var instrumentNumberPart = csvData.InstrumentNumber.Substring(0, midDocumentNumber) + '\u200B' + csvData.InstrumentNumber.Substring(midDocumentNumber);
+                            
+                            bodyBuilder.AppendLine($"<p><strong>Document Number:</strong> {instrumentNumberPart}");
+                        }
+
                         bodyBuilder.AppendLine($"<p><strong>Document Type:</strong> {csvData.DocumentTypeDescription}");
                         bodyBuilder.AppendLine($"<p><strong>Date Recorded:</strong> {csvData.RecordingDate}");
                         bodyBuilder.AppendLine($"<p>For more information, Email: <a href=\"mailto:property.alert@oklahomacounty.org\" target=\"_blank\">property.alert@oklahomacounty.org</a> | Phone: 405-713-1540 | Online: <a href=\"https://www.okcc.online/?instrument={csvData.InstrumentNumber}\">https://www.okcc.online/?instrument={csvData.InstrumentNumber}</a></p>");
