@@ -154,27 +154,31 @@ public class NotificationsConsumer : BackgroundService
                         //Enviar correo
                         var subject = "Oklahoma County Clerk - Document Filing Notification";
                         var bodyBuilder = new StringBuilder();
-                        var textOnly =
-                            $"This is a Document Filing Notification for the Oklahoma County Clerk's office. Name: {csvData.Grantor}, Document Number: {csvData.InstrumentNumber}, Document Type: {csvData.DocumentTypeDescription}, Date Recorded: {csvData.RecordingDate}; For more information, Email: property.alert@oklahomacounty.org | Phone: 405-713-1540 | Online: https://www.okcc.online/?instrument={csvData.InstrumentNumber}";
+                        var instrumentNumberPart = "";
+                        
                         bodyBuilder.AppendLine($"<h2>Document Filing Notification</h2>");
                         bodyBuilder.AppendLine($"<p>This is a Document Filing Notification from the Oklahoma County Clerk's office.</p>");
-                        bodyBuilder.AppendLine($"<p><strong>Grantor:</strong> {contact.FirstName} {contact.LastName}");
+                        bodyBuilder.AppendLine($"<p><strong>Grantor:</strong> {contact.FirstName?.ToUpper()} {contact.LastName?.ToUpper()}");
                         bodyBuilder.AppendLine($"<p><strong>Grantee:</strong> {csvData.Grantee}");
                         if (!contactFoundInGrantee && !string.IsNullOrWhiteSpace(csvData.InstrumentNumber))
                         {
                             var documentNumberLen = csvData.InstrumentNumber.Length;
                             var midDocumentNumber = documentNumberLen / 2;
-                            var instrumentNumberPart = csvData.InstrumentNumber.Substring(0, midDocumentNumber) + '\u200B' + csvData.InstrumentNumber.Substring(midDocumentNumber);
+                            instrumentNumberPart = csvData.InstrumentNumber.Substring(0, midDocumentNumber) + '\u200B' + csvData.InstrumentNumber.Substring(midDocumentNumber);
                             
                             bodyBuilder.AppendLine($"<p><strong>Document Number:</strong> {instrumentNumberPart}");
                         }
 
                         bodyBuilder.AppendLine($"<p><strong>Document Type:</strong> {csvData.DocumentTypeDescription}");
                         bodyBuilder.AppendLine($"<p><strong>Date Recorded:</strong> {csvData.RecordingDate}");
-                        bodyBuilder.AppendLine($"<p>For more information, Email: <a href=\"mailto:property.alert@oklahomacounty.org\" target=\"_blank\">property.alert@oklahomacounty.org</a> | Phone: 405-713-1540 | Online: <a href=\"https://www.okcc.online/?instrument={csvData.InstrumentNumber}\">https://www.okcc.online/?instrument={csvData.InstrumentNumber}</a></p>");
+                        bodyBuilder.AppendLine($"<p>For more information, Email: <a href=\"mailto:property.alert@oklahomacounty.org\" target=\"_blank\">property.alert@oklahomacounty.org</a> | Phone: 405-713-1540 {(!string.IsNullOrWhiteSpace(instrumentNumberPart) ? $"| Online: <a href=\"https://www.okcc.online/?instrument={csvData.InstrumentNumber}\">https://www.okcc.online/?instrument={csvData.InstrumentNumber}</a>" : "")}</p>");
                         bodyBuilder.AppendLine($"<p>Thanks,</p>");
                         bodyBuilder.AppendLine($"<p>The Oklahoma County Clerk</p>");
 
+                        var textOnly =
+                            $"This is a Document Filing Notification for the Oklahoma County Clerk's office. Name: {csvData.Grantor}, {(!string.IsNullOrWhiteSpace(instrumentNumberPart) ? $"Document Number: {csvData.InstrumentNumber}" : "" )}, Document Type: {csvData.DocumentTypeDescription}, Date Recorded: {csvData.RecordingDate}; For more information, Email: property.alert@oklahomacounty.org | Phone: 405-713-1540 {(!string.IsNullOrWhiteSpace(instrumentNumberPart) ? "| Online: https://www.okcc.online/?instrument={instrumentNumberPart}" : "")}";
+
+                        
                         var emails = new List<string> { contact.Email };
                         var preferredMethod = !string.IsNullOrWhiteSpace(contact.PreferredMethod)
                             ? contact.PreferredMethod.Split("|")[0]
